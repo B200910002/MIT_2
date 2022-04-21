@@ -3,8 +3,12 @@
  */
 package twitter;
 
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extract consists of methods that extract information from a list of tweets.
@@ -24,7 +28,21 @@ public class Extract {
      *         every tweet in the list.
      */
     public static Timespan getTimespan(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+    	Timespan timespan = null;
+    	
+    	Instant start = tweets.get(0).getTimestamp();
+    	Instant end = tweets.get(0).getTimestamp();
+    	
+    	for(Tweet tweet: tweets) {
+    		if(tweet.getTimestamp().isBefore(start)) {
+    			start = tweet.getTimestamp();
+    		}
+    		else if(tweet.getTimestamp().isAfter(end)) {
+    			end = tweet.getTimestamp();
+    		}
+    	}
+    	timespan = new Timespan(start, end);
+    	return timespan;
     }
 
     /**
@@ -43,7 +61,31 @@ public class Extract {
      *         include a username at most once.
      */
     public static Set<String> getMentionedUsers(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+//    	Set<String> username = new HashSet<>();
+//    	
+    	String mentionLetters = "@";
+//    	Pattern p = Pattern.compile(mentionLetters);
+//    	
+//    	for(Tweet tweet: tweets) {
+//    		String text = tweet.getText();
+//    		Matcher m = p.matcher(text);
+//    		
+//    		while(m.find()) {
+//    			String userMention = m.group().substring(0).toLowerCase();
+//    			username.add(userMention);
+//    		}
+//    	}
+    	
+    	Set<String> username = null;
+    	
+    	for(Tweet tweet: tweets) {
+    		String author = "";
+    		if(author.contains(mentionLetters)) {
+    			username.add(author);
+    		}
+    	}
+    	
+    	return username; 
     }
 
 }
