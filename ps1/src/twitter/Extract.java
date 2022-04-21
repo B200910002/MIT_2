@@ -61,30 +61,20 @@ public class Extract {
      *         include a username at most once.
      */
     public static Set<String> getMentionedUsers(List<Tweet> tweets) {
-//    	Set<String> username = new HashSet<>();
-//    	
-    	String mentionLetters = "@";
-//    	Pattern p = Pattern.compile(mentionLetters);
-//    	
-//    	for(Tweet tweet: tweets) {
-//    		String text = tweet.getText();
-//    		Matcher m = p.matcher(text);
-//    		
-//    		while(m.find()) {
-//    			String userMention = m.group().substring(0).toLowerCase();
-//    			username.add(userMention);
-//    		}
-//    	}
+    	Set<String> username = new HashSet<>();
     	
-    	Set<String> username = null;
+    	String mentionLetters = "@";
+    	Pattern p = Pattern.compile(mentionLetters);
     	
     	for(Tweet tweet: tweets) {
-    		String author = "";
-    		if(author.contains(mentionLetters)) {
-    			username.add(author);
+    		String text = tweet.getText();
+    		Matcher m = p.matcher(text);
+    		
+    		while(m.find()) {
+    			String userMention = m.group().substring(0).toLowerCase();
+    			username.add(userMention);
     		}
     	}
-    	
     	return username; 
     }
 
