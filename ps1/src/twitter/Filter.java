@@ -3,6 +3,9 @@
  */
 package twitter;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,7 +30,16 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> writtenBy(List<Tweet> tweets, String username) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> writtenTweets = new ArrayList<>();
+        //жиргээнээс хэрэглэгчийн нэрийг шалгаад үр дүнд нэмнэ
+        for (Tweet tweet : tweets) {
+            String tweetAuthor = tweet.getAuthor();
+            
+            if (tweetAuthor.equalsIgnoreCase(username)) {
+                writtenTweets.add(tweet);
+            }
+        }
+        return writtenTweets;
     }
 
     /**
@@ -41,7 +53,18 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> inTimespan(List<Tweet> tweets, Timespan timespan) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> tweetsInTimespan = new ArrayList<>();
+        
+        for (Tweet tweet : tweets) {
+            Instant timestamp = tweet.getTimestamp();
+            //if timespan start >= tweet timestamp >= timespan end байвал
+            //үр дүнд нэмнэ
+            if ((timestamp.isAfter(timespan.getStart()) || timestamp.equals(timespan.getStart()))  &&      
+                (timestamp.isBefore(timespan.getEnd()) || timestamp.equals(timespan.getEnd()))) {       
+                tweetsInTimespan.add(tweet);
+            }
+        }
+        return tweetsInTimespan;
     }
 
     /**
@@ -60,7 +83,21 @@ public class Filter {
      *         same order as in the input list.
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> tweetList = new ArrayList<>();
+        
+        for (Tweet tweet : tweets) {
+            //жиргээний текстийг үгсийн жагсаалтад хувааж хадгална
+            String text = tweet.getText().toLowerCase().replaceAll("[^\\w\\s]", "");   
+            List<String> textList = new ArrayList<>(Arrays.asList(text.split(" ")));   
+            //Хэрэв жиргээний текстэнд үг байгаа бол үр дүнд нэмнэ
+            for (String word : words) {
+                if (textList.contains(word.toLowerCase())) {
+                    tweetList.add(tweet);
+                    break;
+                }
+            }
+        }
+        return tweetList;
     }
 
 }

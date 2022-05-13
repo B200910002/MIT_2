@@ -3,9 +3,15 @@
  */
 package twitter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * SocialNetwork provides methods that operate on a social network.
@@ -41,8 +47,79 @@ public class SocialNetwork {
      *         either authors or @-mentions in the list of tweets.
      */
     public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        Map<String, Set<String>> socialNetwork = new HashMap<>();
+        Map<String, Set<String>> userHashtags = new HashMap<>();
+        
+        if (tweets.isEmpty()) {
+            return socialNetwork;
+        } else {
+            // map users by mentions "@" in tweets
+            for (Tweet tweet : tweets) {
+                String author = tweet.getAuthor().toLowerCase();
+                Set<String> mentionedUsernames = Extract.getMentionedUsers(Arrays.asList(tweet));
+                // remove self-mention
+                if (mentionedUsernames.contains(author)) {
+                    mentionedUsernames.remove(author);
+                }
+                if (socialNetwork.containsKey(author)) {
+                    socialNetwork.get(author).addAll(mentionedUsernames);
+                } else {
+                    socialNetwork.put(author, mentionedUsernames);
+                }
+                
+                // map hashtags to user
+                Set<String> hashtags = getHashtags(tweet.getText());
+                if (userHashtags.containsKey(author)) {
+                    userHashtags.get(author).addAll(hashtags);
+                } else {
+                    userHashtags.put(author, hashtags);
+                }  
+             }
+            // map users to each other by common hashtags
+            for (String user1 : userHashtags.keySet()) {
+                for (String user2 : userHashtags.keySet()) {
+                    if (!user1.equals(user2)) {
+                        Set<String> user1Hashtags = new HashSet<>(userHashtags.get(user1));
+                        if (user1Hashtags.removeAll(userHashtags.get(user2))) {
+                            if (socialNetwork.containsKey(user1)) {
+                                socialNetwork.get(user1).add(user2);
+                            } else {
+                                socialNetwork.put(user1, new HashSet<String>(Arrays.asList(user2)));
+                            }
+                            if (socialNetwork.containsKey(user2)) {
+                                socialNetwork.get(user2).add(user1);
+                            } else {
+                                socialNetwork.put(user2, new HashSet<String>(Arrays.asList(user2)));
+                            }
+                        }
+                    }
+                }
+            }
+        }   
+        return socialNetwork;
     }
+        
+    
+    /**
+     * Finds hashtags in a String
+     * 
+     * @param text
+     *            tweet text
+     * @return Set of hashtags in tweet text
+     */
+    private static Set<String> getHashtags(String text){
+        Set<String> hashtags = new HashSet<>();
+        String[] words = text.split("\\s");
+        
+        for (String word : words) {
+            if (Pattern.matches("#([A-Za-z0-9_-]+)", word)) {
+                word = word.substring(1).toLowerCase();
+                hashtags.add(word);
+            }
+        }
+        return hashtags;
+    }
+
 
     /**
      * Find the people in a social network who have the greatest influence, in
@@ -54,7 +131,38 @@ public class SocialNetwork {
      *         descending order of follower count.
      */
     public static List<String> influencers(Map<String, Set<String>> followsGraph) {
-        throw new RuntimeException("not implemented");
+        List<String> influenceList = new ArrayList<>();
+        Map<String, Integer> influencers = new HashMap<>();
+        
+        // add followed users to map and count their followers
+        for (Set<String> follows : followsGraph.values()) {
+            for (String followedUser : follows) {
+                followedUser = followedUser.toLowerCase();
+                if (influencers.containsKey(followedUser)) {
+                    influencers.put(followedUser, influencers.get(followedUser) + 1);
+                } else {
+                    influencers.put(followedUser, 0);
+                }
+            }
+        }
+        // add remaining users
+        for (String username : followsGraph.keySet()) {
+            username = username.toLowerCase();
+            if (!influencers.containsKey(username)) {
+                influencers.put(username.toLowerCase(), 0);
+            }
+        }
+        // sort users by followers
+        while(!influencers.isEmpty()){
+            int topFollowers = Collections.max(influencers.values());
+            for (String username : influencers.keySet()){
+                if(influencers.get(username).equals(topFollowers)){
+                    influenceList.add(username);
+                    influencers.remove(username);
+                    break;
+                }
+            }
+        }
+        return influenceList;
     }
-
 }
